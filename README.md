@@ -19,6 +19,10 @@ Bem-vindo ao núcleo de informações do **Protocolo Zero**, onde dados confiden
 - 🌐 [**Árvore de Links do Protocolo**](arvore_de_links_do_protocolo_zero.html)  
   A arquitetura oculta de tudo que está conectado. Um índice interativo para acesso rápido a conteúdos internos, subterrâneos e paralelos.
 
+- 🕵️ [**Empresa OPS**](ops.html)  
+  O rosto público de algo muito maior. Supostamente apenas uma empresa de segurança... mas os registros contam outra história.
+
+
 ---
 
 ## 🧩 Regras de Navegação
