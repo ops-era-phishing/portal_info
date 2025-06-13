@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Glossário Protocolo Zero</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background-color: #0c0c0c;
+      color: #00ffe1;
+      font-family: 'Courier New', monospace;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      text-shadow: 0 0 8px #00ffe1;
+    }
+
+    .search-bar {
+      width: 100%;
+      max-width: 500px;
+      margin: 1rem auto 2rem;
+      display: block;
+      padding: 0.5rem;
+      border: 1px solid #00ffe1;
+      background: #000;
+      color: #00ffe1;
+      font-size: 1rem;
+    }
+
+    .glossary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .term {
+      background-color: #111;
+      border-left: 4px solid #00ffe1;
+      padding: 1rem;
+      box-shadow: 0 0 5px #00ffe1aa;
+      transition: transform 0.2s;
+    }
+
+    .term:hover {
+      transform: scale(1.02);
+      background-color: #1a1a1a;
+    }
+
+    .term h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+
+    .term p {
+      font-size: 0.95rem;
+      color: #b2fff5;
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📖 Glossário Oficial - Protocolo Zero</h1>
+    <input type="text" class="search-bar" placeholder="Buscar termo..." oninput="filtrarTermos()" />
+  </header>
+
+  <div class="glossary" id="glossario">
+    <div class="term" data-termo="Frequência Zero">
+      <h2>Frequência Zero</h2>
+      <p>Canal de transmissão anômalo detectado por dispositivos ilegais. Acredita-se que interfira com percepções sensoriais humanas.</p>
+    </div>
+    <div class="term" data-termo="Sustaina Trip">
+      <h2>Sustaina Trip</h2>
+      <p>Frente turística sustentável que, secretamente, atua como fachada para agentes da resistência.</p>
+    </div>
+    <div class="term" data-termo="Agente K₁₃">
+      <h2>Agente K₁₃</h2>
+      <p>Ex-discípulo do Dr. Zero, atualmente desaparecido em ação. Suas transmissões foram interceptadas por membros da Frequência.</p>
+    </div>
+    <div class="term" data-termo="Dr. Zero">
+      <h2>Dr. Zero</h2>
+      <p>Figura enigmática que iniciou os primeiros estudos sobre a Frequência. Considerado traidor pela OPS.</p>
+    </div>
+    <div class="term" data-termo="OPS">
+      <h2>OPS</h2>
+      <p>Organização de Preservação Sensorial. Supostamente criada para conter a Frequência, mas há rumores de controle neurocognitivo.</p>
+    </div>
+    <div class="term" data-termo="Membrana">
+      <h2>Membrana</h2>
+      <p>Barreira psíquica entre o mundo perceptível e a camada de transmissão da Frequência Zero. Pode ser rompida por exposição prolongada.</p>
+    </div>
+    <div class="term" data-termo="Zonas Interferidas">
+      <h2>Zonas Interferidas</h2>
+      <p>Regiões geográficas onde o sinal é mais forte. Floripa é uma delas, segundo os dados do Agente K.</p>
+    </div>
+    <div class="term" data-termo="Entidades">
+      <h2>Entidades</h2>
+      <p>Formas de consciência que habitam ou emergem da Frequência. A interação com elas é irreversível.</p>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Protocolo Zero - Todos os direitos reservados. Este é um projeto transmídia de roleplay investigativo.</p>
+  </footer>
+
+  <script>
+    function filtrarTermos() {
+      const input = document.querySelector('.search-bar').value.toLowerCase();
+      const termos = document.querySelectorAll('.term');
+      
+      termos.forEach(el => {
+        const termo = el.dataset.termo.toLowerCase();
+        el.style.display = termo.includes(input) ? 'block' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
+

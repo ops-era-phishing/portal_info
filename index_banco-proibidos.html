@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banco dos Proibidos</title>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <style>
+    body {
+      background: #0e0e0e;
+      color: #e1e1e1;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 { color: #fff033; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      width: 100%;
+      max-width: 800px;
+    }
+    .caixa {
+      background: #1c1c1c;
+      padding: 1rem;
+      border: 1px solid #333;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .caixa.aberta {
+      background-color: #234d20;
+      border-color: #72f542;
+    }
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #111;
+      padding: 2rem;
+      border-radius: 10px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: auto;
+    }
+    .modal-content iframe,
+    .modal-content img,
+    .modal-content video,
+    .modal-content audio {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>🏦 Banco dos Proibidos</h1>
+
+  <div class="grid" id="caixas"></div>
+
+  <div id="modal" class="modal" style="display: none;">
+    <div class="modal-content" id="modal-content"></div>
+  </div>
+
+<section id="lore-game" style="max-width: 900px; margin: 2rem auto; font-family: 'Courier New', monospace; color: #e1e1e1; background: #121212; padding: 2rem; border-radius: 10px; box-shadow: 0 0 15px #00ff88aa;">
+  <h2 style="color: #00ff88; margin-bottom: 1rem;">🧬 LORE (background da história)</h2>
+  <p>O mundo como conhecemos já acabou. Só esqueceram de nos avisar.</p>
+  <p>Em algum ponto entre 2023 e 2025, uma série de vazamentos digitais revelou a existência de uma entidade descentralizada conhecida como <strong>Membrana</strong>, capaz de manipular informação sensorial diretamente no córtex humano via ondas de rede neural latente.</p>
+  <p>Como forma de proteção e resistência, um grupo anônimo de agentes criou o <strong>Banco dos Proibidos</strong>, uma infraestrutura oculta de armazenamento simbólico que guarda artefatos, mensagens e tecnologias consideradas "perigosas demais" para o conhecimento público.</p>
+  <p><em>Só há uma regra: quem desbloqueia, compartilha.</em></p>
+  <p>Cada caixa é única. Uma vez aberta, torna-se visível para todos.</p>
+  <p><strong>Mas cuidado:</strong> algumas senhas não foram feitas para serem lembradas. Foram feitas para serem sobrevividas.</p>
+
+  <h2 style="color: #00ff88; margin-top: 2rem;">🎮 COMO FUNCIONA O GAME</h2>
+
+  <h3 style="color: #72f542;">🎯 Objetivo dos jogadores</h3>
+  <p>Desbloquear o máximo de caixas possível, coletando informações que revelam segredos do universo do <em>Protocolo Zero</em> / <em>Membrana</em>, formando a linha do tempo oculta do universo ARG. Jogadores que descobrirem senhas ganham prêmios simbólicos e têm seus nomes eternizados como <strong>Decifradores</strong>.</p>
+
+  <h3 style="color: #72f542;">🧩 Dinâmica de Jogo</h3>
+  <ul style="line-height: 1.6;">
+    <li><strong>Acesso ao Banco:</strong> Os jogadores acessam o site onde veem 24 caixas trancadas.</li>
+    <li><strong>Investigação coletiva:</strong> As senhas estão escondidas pelo universo do ARG: vídeos no TikTok, issues no GitHub da história, transmissões ao vivo, frases escondidas, mensagens em HTML, distorções de áudio, QR codes malucos… Tudo pode ser pista.</li>
+    <li><strong>Desbloqueio (individual + coletivo):</strong> Quem acertar a senha:
+      <ul>
+        <li>Desbloqueia a caixa para todo o grupo</li>
+        <li>Ganha um PIX, gift card ou recompensa simbólica</li>
+        <li>Tem seu <code>@</code> registrado como “descobridor” dentro da caixa</li>
+      </ul>
+    </li>
+    <li><strong>Recompensas narrativas:</strong> Cada caixa contém um conteúdo único:
+      <ul>
+        <li>Dica para avançar na história</li>
+        <li>Tutorial proibido (ex: como invadir um fluxo de câmera fictícia)</li>
+        <li>Áudio de confissão de um ex-agente</li>
+        <li>Imagem encriptada de uma instalação secreta</li>
+        <li>Vídeo estilo found footage</li>
+        <li>Ou apenas… silêncio perturbador</li>
+      </ul>
+    </li>
+    <li><strong>Progresso da comunidade:</strong> As caixas seguem uma ordem oculta. Abrir certas caixas desbloqueia eventos futuros — tipo lives, atualizações no site, ou até liberações de novas páginas ocultas (comando em terminal, rota alternativa, etc.).</li>
+  </ul>
+</section>
+
+
+  <script>
+    window.onload = async () => {
+      const supabaseUrl = 'https://ogcpmzljtgemrdmrwwit.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nY3BtemxqdGdlbXJkbXJ3d2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3ODM0MjYsImV4cCI6MjA2NTM1OTQyNn0.PSQCZ6Uxgw_CsP5FUwFMfN2rLc4e4_3SEuk7rzVfbLk';
+      const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+      const grid = document.getElementById('caixas');
+      const modal = document.getElementById('modal');
+      const modalContent = document.getElementById('modal-content');
+
+      async function carregarCaixas() {
+        const { data, error } = await supabaseClient.from('caixas').select('*');
+        if (error) return alert('Erro ao carregar caixas');
+
+        grid.innerHTML = ''; // limpa antes de renderizar
+        data.forEach(caixa => {
+          const el = document.createElement('div');
+          el.className = 'caixa' + (caixa.desbloqueado ? ' aberta' : '');
+          el.innerHTML = `<strong>Caixa #${String(caixa.id).padStart(3, '0')}</strong><br>${caixa.desbloqueado ? '🔓 Aberta' : '🔒 Trancada'}`;
+          el.onclick = () => abrirCaixa(caixa);
+          grid.appendChild(el);
+        });
+      }
+
+      async function abrirCaixa(caixa) {
+        if (caixa.desbloqueado) {
+          mostrarConteudo(caixa);
+          return;
+        }
+
+        const senha = prompt('Digite a senha da caixa #' + caixa.id);
+        if (senha === caixa.senha) {
+          const nome = prompt('Digite seu @ para registrar sua descoberta:');
+          await supabaseClient.from('caixas').update({
+            desbloqueado: true,
+            descoberto_por: nome,
+            data_desbloqueio: new Date().toISOString()
+          }).eq('id', caixa.id);
+
+          caixa.desbloqueado = true;
+          caixa.descoberto_por = nome;
+          mostrarConteudo(caixa);
+          carregarCaixas(); // atualiza a grid
+        } else {
+          alert('❌ Senha incorreta. A caixa permanece trancada.');
+        }
+      }
+
+      function mostrarConteudo(caixa) {
+        let html = `<p><strong>Descoberto por:</strong> @${caixa.descoberto_por}</p>`;
+        switch (caixa.conteudo_tipo) {
+          case 'texto':
+            html += `<p>${caixa.conteudo_texto}</p>`;
+            break;
+          case 'pdf':
+            html += `<iframe src="${caixa.conteudo_url}" width="100%" height="500px"></iframe>`;
+            break;
+          case 'imagem':
+            html += `<img src="${caixa.conteudo_url}" alt="Imagem da caixa" />`;
+            break;
+          case 'audio':
+            html += `<audio controls src="${caixa.conteudo_url}"></audio>`;
+            break;
+          case 'video':
+            html += `<video controls src="${caixa.conteudo_url}" width="100%"></video>`;
+            break;
+          case 'link':
+            html += `<p><a href="${caixa.conteudo_url}" target="_blank">Abrir conteúdo externo</a></p>`;
+            break;
+          default:
+            html += `<p>⚠️ Tipo de conteúdo não suportado.</p>`;
+        }
+        modalContent.innerHTML = html;
+        modal.style.display = 'flex';
+      }
+
+      modal.onclick = () => modal.style.display = 'none';
+
+      carregarCaixas();
+    };
+  </script>
+</body>
+</html>
+
