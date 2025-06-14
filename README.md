@@ -21,6 +21,11 @@ Bem-vindo ao núcleo de informações do **Protocolo Zero**, onde dados confiden
 
 - 🕵️ [**Empresa OPS**](ops.html)  
   O rosto público de algo muito maior. Supostamente apenas uma empresa de segurança... mas os registros contam outra história.
+  
+- 🗺️ [**Mapa de Zonas Seguras**](mapa-interativo.html) 
+ Um guia criptografado das últimas áreas turísticas de Florianópolis onde ainda é possível circular sem interferência direta. Acessível apenas para agentes autorizados  ou curiosos com nervos de aço.
+
+
 
 
 ---
