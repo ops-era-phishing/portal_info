@@ -5,300 +5,613 @@
   <title>Mapa Interativo de Florianópolis</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- CSS do Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Fontes do Google -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Ícones Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    #map {
-      height: 100vh;
+    :root {
+      --primary-color: #1abc9c;
+      --secondary-color: #2980b9;
+      --dark-color: #2c3e50;
+      --light-color: #ecf0f1;
+      --background-color: #f9f9f9;
+      --text-color: #333;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Open Sans', sans-serif;
+      color: var(--text-color);
+      background-color: var(--background-color);
+      line-height: 1.6;
+    }
+    
+    header {
+      background-color: var(--dark-color);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    
+    h1 {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+    
+    .menu {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px;
+      background-color: var(--dark-color);
+      box-shadow: var(--shadow);
+    }
+    
+    .menu a {
+      color: var(--light-color);
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    
+    .menu a:hover {
+      color: var(--primary-color);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    #map-container {
+      position: relative;
+      height: calc(100vh - 120px);
       width: 100%;
     }
     
-    /* Estilização simples para a legenda */
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    
+    /* Controles personalizados */
+    .map-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .map-controls button {
+      background-color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    
+    .map-controls button:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    /* Legenda */
     .legend {
       background: white;
-      line-height: 1.5em;
-      padding: 6px 8px;
-      font: 14px Arial, sans-serif;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: var(--shadow);
+      font-size: 14px;
+      line-height: 1.8;
     }
+    
     .legend i {
-      width: 18px;
-      height: 18px;
-      float: left;
-      margin-right: 8px;
+      width: 20px;
+      display: inline-block;
       text-align: center;
-      font-size: 18px;
-      line-height: 18px;
+      margin-right: 8px;
     }
-
-    .menu {
-  display: flex;
-  justify-content: center; /* ou space-between */
-  gap: 20px; /* espaçamento entre os links */
-  padding: 10px;
-  background-color: #f5f5f5;
-}
-
-h1 {
-  font-size: 2.5em;
-  color: #1abc9c;
-}
-
-a {
-  color: #2980b9;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-a:hover {
-  color: #1abc9c;
-}
+    
+    /* Filtros */
+    .filter-panel {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: var(--shadow);
+      max-width: 250px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .filter-panel h3 {
+      margin-bottom: 10px;
+      color: var(--dark-color);
+      font-size: 16px;
+    }
+    
+    .filter-group {
+      margin-bottom: 15px;
+    }
+    
+    .filter-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    
+    .filter-item input {
+      margin-right: 8px;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .menu {
+        gap: 5px;
+        padding: 10px;
+      }
+      
+      .menu a {
+        font-size: 14px;
+        padding: 3px 6px;
+      }
+      
+      #map-container {
+        height: calc(100vh - 100px);
+      }
+      
+      .filter-panel {
+        max-width: 200px;
+        padding: 10px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .map-controls {
+        flex-direction: row;
+        bottom: 10px;
+        top: auto;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      
+      .filter-panel {
+        max-width: 150px;
+        font-size: 12px;
+      }
+    }
+    
+    /* Custom icons */
+    .custom-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background-color: white;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    /* Loading indicator */
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1001;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
 
-  <header class="container">
-    <h1>Mapa Interativo</h1>
+  <header>
+    <div class="container">
+      <h1>Mapa Interativo de Florianópolis</h1>
+    </div>
   </header>
 
   <nav class="menu">
-    <a href="index.html">Início</a> |
-    <a href="loja.html">Loja</a> |
-    <a href="blog.html">Blog</a> |
-    <a href="sobre.html">Quem Somos</a> |
-    <a href="portfolio.html">Portfólio</a>
-    <a href="mapa-interativo.html">Mapa Interativo</a>
+    <a href="https://sustainatrip.tur.br/"><i class="fas fa-home"></i> Início</a>
+    <a href="#"><i class="fas fa-store"></i> Loja</a>
+    <a href="https://sustainatrip.tur.br/blog.html"><i class="fas fa-blog"></i> Blog</a>
+    <a href="#"><i class="fas fa-info-circle"></i> Quem Somos</a>
+    <a href="#"><i class="fas fa-briefcase"></i> Portfólio</a>
+    <a href="#"><i class="fas fa-map-marked-alt"></i> Mapa Interativo</a>
   </nav>
 
-<div id="map"></div>
+  <div id="map-container">
+    <div id="map"></div>
+    
+    <!-- Loading indicator (hidden by default) -->
+    <div class="loading" style="display: none;">
+      <div class="spinner"></div>
+      <p>Carregando dados...</p>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="filter-panel">
+      <h3><i class="fas fa-filter"></i> Filtrar Categorias</h3>
+      
+      <div class="filter-group">
+        <div class="filter-item">
+          <input type="checkbox" id="filter-praias" checked data-category="praias">
+          <label for="filter-praias"><i class="fas fa-umbrella-beach"></i> Praias</label>
+        </div>
+        <div class="filter-item">
+          <input type="checkbox" id="filter-mirantes" checked data-category="mirantes">
+          <label for="filter-mirantes"><i class="fas fa-binoculars"></i> Mirantes</label>
+        </div>
+        <div class="filter-item">
+          <input type="checkbox" id="filter-gastronomia" checked data-category="gastronomia">
+          <label for="filter-gastronomia"><i class="fas fa-utensils"></i> Gastronomia</label>
+        </div>
+        <div class="filter-item">
+          <input type="checkbox" id="filter-turismo" checked data-category="turismo">
+          <label for="filter-turismo"><i class="fas fa-bus"></i> Agências de Turismo</label>
+        </div>
+        <div class="filter-item">
+          <input type="checkbox" id="filter-hoteis" checked data-category="hoteis">
+          <label for="filter-hoteis"><i class="fas fa-hotel"></i> Hotéis</label>
+        </div>
+        <div class="filter-item">
+          <input type="checkbox" id="filter-ecologicos" checked data-category="ecologicos">
+          <label for="filter-ecologicos"><i class="fas fa-leaf"></i> Pontos Ecológicos</label>
+        </div>
+        <div class="filter-item">
+          <input type="checkbox" id="filter-shoppings" checked data-category="shoppings">
+          <label for="filter-shoppings"><i class="fas fa-shopping-bag"></i> Shoppings</label>
+        </div>
+        <div class="filter-item">
+          <input type="checkbox" id="filter-jardim" checked data-category="jardim">
+          <label for="filter-jardim"><i class="fas fa-tree"></i> Jardim Botânico</label>
+        </div>
+        <div class="filter-item">
+          <input type="checkbox" id="filter-zarpado" checked data-category="zarpado">
+          <label for="filter-zarpado"><i class="fas fa-ship"></i> Zarpado/Trapiches</label>
+        </div>
+      </div>
+      
+      <button id="reset-filters" class="btn-reset">
+        <i class="fas fa-sync-alt"></i> Redefinir Filtros
+      </button>
+    </div>
+    
+    <!-- Controles do mapa -->
+    <div class="map-controls">
+      <button id="locate-me">
+        <i class="fas fa-location-arrow"></i> Minha Localização
+      </button>
+      <button id="reset-view">
+        <i class="fas fa-globe-americas"></i> Visualização Padrão
+      </button>
+    </div>
+  </div>
 
 <!-- Script do Leaflet -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Biblioteca para geolocalização -->
+<script src="https://unpkg.com/leaflet.locatecontrol@0.76.0/dist/L.Control.Locate.min.js"></script>
 <script>
+  // Objeto para armazenar todos os marcadores por categoria
+  const markers = {
+    praias: [],
+    mirantes: [],
+    gastronomia: [],
+    turismo: [],
+    hoteis: [],
+    ecologicos: [],
+    shoppings: [],
+    jardim: [],
+    zarpado: []
+  };
+
   // Inicializa o mapa centralizando em Florianópolis
-  var map = L.map('map').setView([-27.59, -48.55], 12);
+  const map = L.map('map').setView([-27.59, -48.55], 12);
 
   // Adiciona a camada base do OpenStreetMap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  // Adiciona controle de localização
+  L.control.locate({
+    position: 'topright',
+    strings: {
+      title: "Mostrar minha localização",
+      popup: "Você está dentro de {distance} {unit} deste ponto"
+    },
+    locateOptions: {
+      maxZoom: 16,
+      enableHighAccuracy: true
+    }
   }).addTo(map);
 
   // Define ícones personalizados para cada categoria
-  var iconPraia = L.divIcon({className: 'custom-icon', html: '☀️', iconSize: [25, 25]});
-  var iconMirante = L.divIcon({className: 'custom-icon', html: '📷', iconSize: [25, 25]});
-  var iconGastro = L.divIcon({className: 'custom-icon', html: '🍴', iconSize: [25, 25]});
-  var iconTurismo = L.divIcon({className: 'custom-icon', html: '🚌', iconSize: [25, 25]});
-  var iconHotel = L.divIcon({className: 'custom-icon', html: '🏨', iconSize: [25, 25]});
-  var iconEco = L.divIcon({className: 'custom-icon', html: '🌿', iconSize: [25, 25]});
-  var iconShopping = L.divIcon({className: 'custom-icon', html: '🛍️', iconSize: [25, 25]});
-  var iconJardim = L.divIcon({className: 'custom-icon', html: '🌳', iconSize: [25, 25]});
-  var iconZarpado = L.divIcon({className: 'custom-icon', html: '⛵', iconSize: [25, 25]});
-
-  /* -----------------------------------------------------------
-     Adicionando os marcadores por categoria
-  ----------------------------------------------------------- */
-  
-  // 1. PRAIAS (42 pontos)
-  L.marker([-27.602559,-48.432867], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia Mole</b><br>Informações sobre Praia Mole.");
-  L.marker([-27.628923,-48.448259], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia da Joaquina</b><br>Informações sobre Praia da Joaquina.");
-  L.marker([-27.689639,-48.481612], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia do Campeche</b><br>Informações sobre Praia do Campeche.");
-  L.marker([-27.437653,-48.388743], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia dos Ingleses</b><br>Informações sobre Praia dos Ingleses.");
-  L.marker([-27.427016,-48.458508], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia de Canasvieiras</b><br>Informações sobre Praia de Canasvieiras.");
-  L.marker([-27.403135,-48.412389], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia Brava</b><br>Informações sobre Praia Brava.");
-  L.marker([-27.389066,-48.421550], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia da Lagoinha</b><br>Informações sobre Praia da Lagoinha.");
-  L.marker([-27.462179,-48.376094], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia do Santinho</b><br>Informações sobre Praia do Santinho.");
-  L.marker([-27.395530,-48.433554], { icon: iconPraia }).addTo(map).bindPopup("<b>Ponta das Canas</b><br>Informações sobre Ponta das Canas.");
-  L.marker([-27.452404,-48.541421], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia da Daniela</b><br>Informações sobre Praia da Daniela.");
-  L.marker([-27.432179,-48.519029], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia do Forte</b><br>Informações sobre Praia do Forte.");
-  L.marker([-27.438059,-48.485940], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia de Jurerê</b><br>Informações sobre Praia de Jurerê.");
-  L.marker([-27.436670,-48.501626], { icon: iconPraia }).addTo(map).bindPopup("<b>Jurerê Internacional</b><br>Informações sobre Jurerê Internacional.");
-  L.marker([-27.573902,-48.423685], { icon: iconPraia }).addTo(map).bindPopup("<b>Barra da Lagoa</b><br>Informações sobre Barra da Lagoa.");
-  L.marker([-27.752905,-48.498637], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia do Matadeiro</b><br>Informações sobre Praia do Matadeiro.");
-  L.marker([-27.747946,-48.504831], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia da Armação</b><br>Informações sobre Praia da Armação.");
-  L.marker([-27.781641,-48.509533], { icon: iconPraia }).addTo(map).bindPopup("<b>Pântano do Sul</b><br>Informações sobre Pântano do Sul.");
-  L.marker([-27.794297,-48.533642], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia da Solidão</b><br>Informações sobre Praia da Solidão.");
-  L.marker([-27.784070,-48.523250], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia dos Açores</b><br>Informações sobre Praia dos Açores.");
-  L.marker([-27.830025,-48.545977], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia do Saquinho</b><br>Informações sobre Praia do Saquinho.");
-  L.marker([-27.773881,-48.486503], { icon: iconPraia }).addTo(map).bindPopup("<b>Lagoinha do Leste</b><br>Informações sobre Lagoinha do Leste.");
-  L.marker([-27.707145,-48.497753], { icon: iconPraia }).addTo(map).bindPopup("<b>Morro das Pedras</b><br>Informações sobre Morro das Pedras.");
-  L.marker([-27.613213,-48.433584], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia do Gravatá</b><br>Informações sobre Praia do Gravatá.");
-  L.marker([-27.592205,-48.424882], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia da Galheta</b><br>Informações sobre Praia da Galheta.");
-  L.marker([-27.834222,-48.563079], { icon: iconPraia }).addTo(map).bindPopup("<b>Naufragados</b><br>Informações sobre Naufragados.");
-  L.marker([-27.617077,-48.593280], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia de Itaguaçu</b><br>Informações sobre Itaguaçu.");
-  L.marker([-27.615839,-48.595306], { icon: iconPraia }).addTo(map).bindPopup("<b>Palmeiras</b><br>Informações sobre Palmeiras.");
-  L.marker([-27.613653,-48.585272], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia do Meio</b><br>Informações sobre Praia do Meio.");
-  L.marker([-27.531311,-48.524707], { icon: iconPraia }).addTo(map).bindPopup("<b>Cacupé</b><br>Informações sobre Cacupé.");
-  L.marker([-27.491462,-48.529788], { icon: iconPraia }).addTo(map).bindPopup("<b>Sambaqui</b><br>Informações sobre Sambaqui.");
-  L.marker([-27.508418,-48.519283], { icon: iconPraia }).addTo(map).bindPopup("<b>Santo Antônio de Lisboa</b><br>Informações sobre Santo Antônio de Lisboa.");
-  L.marker([-27.5786, -48.5916], { icon: iconPraia }).addTo(map).bindPopup("<b>Balneário</b><br>Informações sobre Balneário.");
-  L.marker([-27.5863, -48.5896], { icon: iconPraia }).addTo(map).bindPopup("<b>Coqueiros</b><br>Informações sobre Coqueiros.");
-  L.marker([-27.5875, -48.5884], { icon: iconPraia }).addTo(map).bindPopup("<b>Saudade</b><br>Informações sobre Saudade.");
-  L.marker([-27.5987, -48.5993], { icon: iconPraia }).addTo(map).bindPopup("<b>Bom Abrigo</b><br>Informações sobre Bom Abrigo.");
-  L.marker([-27.7008, -48.5604], { icon: iconPraia }).addTo(map).bindPopup("<b>Tapera</b><br>Informações sobre Tapera.");
-  L.marker([-27.8422, -48.5672], { icon: iconPraia }).addTo(map).bindPopup("<b>Caieira</b><br>Informações sobre Caieira.");
-  L.marker([-27.8732, -48.5578], { icon: iconPraia }).addTo(map).bindPopup("<b>Praia de Fora</b><br>Informações sobre Praia de Fora.");
-  L.marker([-27.8695, -48.5610], { icon: iconPraia }).addTo(map).bindPopup("<b>Naufragados 2</b><br>Informações sobre Naufragados 2.");
-  L.marker([-27.8425, -48.5645], { icon: iconPraia }).addTo(map).bindPopup("<b>Ribanceira do Norte</b><br>Informações sobre Ribanceira do Norte.");
-  L.marker([-27.7236, -48.5804], { icon: iconPraia }).addTo(map).bindPopup("<b>Ribeirão da Ilha</b><br>Informações sobre Ribeirão da Ilha.");
-  L.marker([-27.6393, -48.4957], { icon: iconPraia }).addTo(map).bindPopup("<b>Fazenda Rio Tavares</b><br>Informações sobre Fazenda Rio Tavares.");
-
-  // 2. MIRANTES - Exemplos com coordenadas manuais aproximadas
-  var mirantes = [
-    { name: "Mirante da Lagoa da Conceição", lat: -27.595, lon: -48.468, info: "Vista panorâmica da lagoa." },
-    { name: "Mirante do Morro da Cruz", lat: -27.629, lon: -48.571, info: "Excelente para fotos." },
-    { name: "Mirante do Morro das Pedras", lat: -27.640, lon: -48.520, info: "Ponto ideal para apreciar o pôr do sol." },
-    { name: "Mirante da Praia Mole", lat: -27.650, lon: -48.500, info: "Vista privilegiada da Praia Mole." }
-  ];
-  mirantes.forEach(function(point) {
-    L.marker([point.lat, point.lon], { icon: iconMirante })
-      .addTo(map)
-      .bindPopup("<b>" + point.name + "</b><br>" + point.info);
-  });
-
-  // 3. ROTEIROS GASTRONÔMICOS / RESTAURANTES - 20 pontos
-  var restaurantes = [
-    { name: "Mercado Público de Florianópolis", lat: -27.595, lon: -48.543, info: "Variedade de gastronomia local." },
-    { name: "Restaurante Ostradamus", lat: -27.650, lon: -48.520, info: "Especialidade em frutos do mar." },
-    { name: "Bar do Arante", lat: -27.680, lon: -48.530, info: "Ambiente descontraído com comida típica." },
-    { name: "Restaurante Bokas", lat: -27.590, lon: -48.560, info: "Culinária contemporânea." },
-    { name: "Café Cultura", lat: -27.600, lon: -48.550, info: "Café e petiscos em ambiente artístico." }
-    // Acrescente mais 15 pontos conforme necessário...
-  ];
-  restaurantes.forEach(function(point) {
-    L.marker([point.lat, point.lon], { icon: iconGastro })
-      .addTo(map)
-      .bindPopup("<b>" + point.name + "</b><br>" + point.info);
-  });
-
-  // 4. AGÊNCIAS DE TURISMO - Exemplos (neste caso, 3)
-  var agencias = [
-    { name: "Agência Turismo Floripa", lat: -27.610, lon: -48.560, info: "Pacotes turísticos e city tours." },
-    { name: "Viaje Floripa", lat: -27.620, lon: -48.580, info: "Tours guiados pela cidade." },
-    { name: "Floripa Tours", lat: -27.605, lon: -48.570, info: "Roteiros personalizados." }
-  ];
-  agencias.forEach(function(point) {
-    L.marker([point.lat, point.lon], { icon: iconTurismo })
-      .addTo(map)
-      .bindPopup("<b>" + point.name + "</b><br>" + point.info);
-  });
-
-  // 5. HOTÉIS - 20 pontos reais de alto padrão
-  var hoteis = [
-    { name: "LK Design Hotel", lat: -27.5918, lon: -48.5435, info: "Hotel 5 estrelas com design moderno e rooftop com vista para o mar." },
-    { name: "Hotel Boutique Quinta das Videiras", lat: -27.5961, lon: -48.4565, info: "Hotel boutique charmoso na Lagoa da Conceição, estilo colonial português." },
-    { name: "Costão do Santinho Resort", lat: -27.4322, lon: -48.3792, info: "Resort all inclusive à beira-mar na Praia do Santinho, ideal para famílias." },
-    { name: "Haute Haus", lat: -27.5969, lon: -48.4538, info: "Hotel boutique com suítes exclusivas e vista para a Lagoa da Conceição." },
-    { name: "Majestic Palace Hotel", lat: -27.5916, lon: -48.5462, info: "Hotel 5 estrelas no centro, com vista para a Baía Norte e piscina no terraço." },
-    { name: "Il Campanario Villaggio Resort", lat: -27.4297, lon: -48.5004, info: "Resort sofisticado em Jurerê Internacional, próximo à praia e ao shopping." },
-    { name: "Pousada Vila Rosada", lat: -27.6020, lon: -48.4570, info: "Pousada charmosa na Lagoa da Conceição, ideal para casais." },
-    { name: "Fuso Concept Hotel", lat: -27.4290, lon: -48.5000, info: "Hotel de luxo a poucos passos da Praia de Jurerê, com design contemporâneo." },
-    { name: "Hotel Sete Ilhas", lat: -27.4295, lon: -48.5005, info: "Hotel com acomodações contemporâneas na Praia de Jurerê e vista para o mar." },
-    { name: "Novotel Florianópolis", lat: -27.5912, lon: -48.5460, info: "Hotel 4 estrelas com piscina de borda infinita e vista para a Baía Norte." },
-    { name: "Costa Norte Ingleses Hotel", lat: -27.4340, lon: -48.4030, info: "Hotel à beira-mar na Praia dos Ingleses, com estrutura completa de lazer." },
-    { name: "Porto da Ilha Hotel", lat: -27.5950, lon: -48.5480, info: "Hotel elegante no centro de Florianópolis, próximo ao Beiramar Shopping." },
-    { name: "Palace Praia Hotel", lat: -27.4325, lon: -48.5002, info: "Hotel à beira-mar em Canasvieiras, com vista deslumbrante para o oceano." },
-    { name: "Hotel Slaviero Ingleses Convention", lat: -27.4335, lon: -48.4025, info: "Hotel moderno na Praia dos Ingleses, ideal para eventos e lazer." },
-    { name: "Pousada dos Chás", lat: -27.4292, lon: -48.5001, info: "Pousada boutique inspirada na cultura do chá, a 50 metros do mar de Jurerê." },
-    { name: "Hotel São Sebastião da Praia", lat: -27.6700, lon: -48.4970, info: "Hotel rodeado pela Mata Atlântica, próximo à Praia do Campeche." },
-    { name: "Isadora Duncan Guest House", lat: -27.6005, lon: -48.4550, info: "Hospedagem charmosa à beira da Lagoa da Conceição, ideal para casais." },
-    { name: "Cambirela Hotel", lat: -27.5955, lon: -48.5700, info: "Hotel com estrutura completa, a 5 minutos do centro da cidade." },
-    { name: "Hotel Kennedy Executive", lat: -27.6000, lon: -48.6200, info: "Hotel de alto padrão com mini SPA, Jacuzzi e decoração aconchegante." },
-    { name: "Ponta dos Ganchos Exclusive Resort", lat: -27.3080, lon: -48.5600, info: "Resort de luxo em Governador Celso Ramos, com bangalôs privados e vista para o mar." }
-  ];
-
-  hoteis.forEach(function(point) {
-    L.marker([point.lat, point.lon], { icon: iconHotel })
-      .addTo(map)
-      .bindPopup("<b>" + point.name + "</b><br>" + point.info);
-  });
-
-  // 6. PONTOS ECOLÓGICOS (30 locais reais em Florianópolis)
-  var ecologicos = [
-    { name: "Trilha da Lagoinha do Leste", lat: -27.7780, lon: -48.5080, info: "Trilha desafiadora que leva a uma praia isolada e selvagem." },
-    { name: "Trilha da Costa da Lagoa", lat: -27.5840, lon: -48.4810, info: "Caminhada encantadora ao longo da Lagoa da Conceição, passando por comunidades e cachoeiras." },
-    { name: "Trilha da Praia dos Naufragados", lat: -27.7980, lon: -48.5610, info: "Trilha curta até uma praia histórica com ruínas de fortificações." },
-    { name: "Trilha da Galheta", lat: -27.5910, lon: -48.4230, info: "Acesso à Praia da Galheta, conhecida por sua beleza natural e prática de naturismo." },
-    { name: "Trilha do Morro das Aranhas", lat: -27.4330, lon: -48.3770, info: "Trilha com vistas panorâmicas da Praia do Santinho e arredores." },
-    { name: "Trilha do Gravatá", lat: -27.5900, lon: -48.4200, info: "Trilha curta que leva a uma enseada escondida entre costões rochosos." },
-    { name: "Trilha do Morro da Coroa", lat: -27.7785, lon: -48.5085, info: "Continuação da trilha da Lagoinha do Leste, com vista espetacular do alto." },
-    { name: "Trilha do Poção", lat: -27.5860, lon: -48.4810, info: "Trilha que leva a uma piscina natural no meio da mata." },
-    { name: "Trilha do Morro do Lampião", lat: -27.5830, lon: -48.4820, info: "Trilha com vista panorâmica da Lagoa da Conceição." },
-    { name: "Trilha da Boa Vista", lat: -27.5900, lon: -48.4550, info: "Trilha que oferece vistas da Lagoa da Conceição e do mar." },
-    { name: "Trilha da Barra da Lagoa às Piscinas Naturais", lat: -27.5900, lon: -48.4300, info: "Trilha curta que leva a piscinas naturais entre as pedras." },
-    { name: "Trilha da Praia Brava", lat: -27.4200, lon: -48.4100, info: "Trilha que conecta a Praia Brava à Praia do Moçambique." },
-    { name: "Trilha da Praia do Saquinho", lat: -27.7900, lon: -48.5200, info: "Trilha que leva a uma pequena praia isolada ao sul da ilha." },
-    { name: "Trilha do Morro do Rapa", lat: -27.5900, lon: -48.4500, info: "Trilha com vista panorâmica da região central da ilha." },
-    { name: "Trilha da Praia do Matadeiro", lat: -27.7700, lon: -48.5000, info: "Trilha que conecta a Praia do Matadeiro à Lagoinha do Leste." },
-    { name: "Trilha da Praia do Moçambique", lat: -27.5800, lon: -48.4200, info: "Trilha que percorre a extensa Praia do Moçambique." },
-    { name: "Trilha da Praia do Forte", lat: -27.4300, lon: -48.5000, info: "Trilha que leva ao Forte de São José da Ponta Grossa." },
-    { name: "Trilha da Praia do Santinho", lat: -27.4300, lon: -48.3800, info: "Trilha que percorre a região do Santinho, com inscrições rupestres." },
-    { name: "Trilha da Praia da Solidão", lat: -27.8000, lon: -48.5300, info: "Trilha que leva a uma praia tranquila no sul da ilha." },
-    { name: "Trilha da Praia do Campeche", lat: -27.6700, lon: -48.5000, info: "Trilha que percorre a extensa Praia do Campeche." },
-    { name: "Projeto Tamar", lat: -27.5900, lon: -48.4300, info: "Centro de conservação das tartarugas marinhas com atividades educativas." },
-    { name: "Projeto Lontra", lat: -27.6150, lon: -48.5400, info: "Monitoramento e conservação de lontras na região." },
-    { name: "Associação R3 Animal", lat: -27.6000, lon: -48.5000, info: "Reabilitação de animais silvestres resgatados." },
-    { name: "Parque Estadual do Rio Vermelho", lat: -27.5800, lon: -48.4200, info: "Unidade de conservação com trilhas e viveiros de animais silvestres." },
-    { name: "Refúgio de Vida Silvestre Municipal Meiembipe", lat: -27.5700, lon: -48.4800, info: "Maior unidade de conservação do município, abrangendo morros e áreas naturais." },
-    { name: "Dunas da Joaquina", lat: -27.6200, lon: -48.4500, info: "Extensa área de dunas, popular para sandboard e caminhadas." },
-    { name: "Dunas do Campeche", lat: -27.6700, lon: -48.5000, info: "Área de dunas entre a Praia do Campeche e a Lagoa Pequena." },
-    { name: "Centro de Educação Ambiental da Barra da Lagoa", lat: -27.5900, lon: -48.4300, info: "Centro dedicado à educação ambiental e sustentabilidade." },
-    { name: "Projeto Raízes da Cooperação", lat: -27.6000, lon: -48.5000, info: "Iniciativa para conservação de manguezais e restingas na Grande Florianópolis." },
-    { name: "Jardim Botânico de Florianópolis", lat: -27.6000, lon: -48.5000, info: "Espaço dedicado à conservação da flora local e educação ambiental." }
-  ];
-
-  ecologicos.forEach(function(point) {
-    L.marker([point.lat, point.lon], { icon: iconEco })
-      .addTo(map)
-      .bindPopup("<b>" + point.name + "</b><br>" + point.info);
-  });
-
-  // 7. SHOPS – Shoppings: Beira Mar, Floripa Shopping, Villa Romana, Itaguaçu, Continente
-  var shoppings = [
-    { name: "Shopping Beira Mar", lat: -27.620, lon: -48.560, info: "Diversas lojas e entretenimento." },
-    { name: "Floripa Shopping", lat: -27.605, lon: -48.580, info: "Amplo mix de lojas." },
-    { name: "Villa Romana Shopping", lat: -27.615, lon: -48.590, info: "Centro de compras sofisticado." },
-    { name: "Itaguaçu Shopping", lat: -27.600, lon: -48.600, info: "Opções de lazer e compras." },
-    { name: "Continente Shopping", lat: -27.610, lon: -48.570, info: "Variedade de lojas e serviços." }
-  ];
-  shoppings.forEach(function(point) {
-    L.marker([point.lat, point.lon], { icon: iconShopping })
-      .addTo(map)
-      .bindPopup("<b>" + point.name + "</b><br>" + point.info);
-  });
-
-  // 8. JARDIM BOTÂNICO
-  var jardimBotanico = { name: "Jardim Botânico de Florianópolis", lat: -27.630, lon: -48.590, info: "Espaço de preservação e educação ambiental." };
-  L.marker([jardimBotanico.lat, jardimBotanico.lon], { icon: iconJardim })
-    .addTo(map)
-    .bindPopup("<b>" + jardimBotanico.name + "</b><br>" + jardimBotanico.info);
-
-  // 9. ZARPADO / TRAPICHES – Exemplos de pontos de embarque para passeios à Ilha Campeche e outros
-  var zarpados = [
-    { name: "Ponto de Embarque Trapiche 1", lat: -27.595, lon: -48.540, info: "Saídas para a Ilha Campeche." },
-    { name: "Ponto de Embarque Trapiche 2", lat: -27.585, lon: -48.555, info: "Passeios de lancha e bote turísticos." }
-  ];
-  zarpados.forEach(function(point) {
-    L.marker([point.lat, point.lon], { icon: iconZarpado })
-      .addTo(map)
-      .bindPopup("<b>" + point.name + "</b><br>" + point.info);
-  });
-
-  /* -----------------------------------------------------------
-     Adicionando uma legenda ao mapa para identificar os ícones
-  ----------------------------------------------------------- */
-  var legend = L.control({position: 'bottomright'});
-  legend.onAdd = function(map) {
-    var div = L.DomUtil.create('div', 'legend');
-    div.innerHTML += "<i>☀️</i> Praias<br>";
-    div.innerHTML += "<i>📷</i> Mirantes<br>";
-    div.innerHTML += "<i>🍴</i> Restaurantes / Gastronomia<br>";
-    div.innerHTML += "<i>🚌</i> Agências de Turismo<br>";
-    div.innerHTML += "<i>🏨</i> Hotéis<br>";
-    div.innerHTML += "<i>🌿</i> Pontos Ecológicos<br>";
-    div.innerHTML += "<i>🛍️</i> Shoppings<br>";
-    div.innerHTML += "<i>🌳</i> Jardim Botânico<br>";
-    div.innerHTML += "<i>⛵</i> Zarpado / Trapiches<br>";
-    return div;
+  const createCustomIcon = (icon, color = '#2c3e50') => {
+    return L.divIcon({
+      className: 'custom-icon',
+      html: icon,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+      popupAnchor: [0, -15]
+    });
   };
-  legend.addTo(map);
+
+  const icons = {
+    praias: createCustomIcon('🏖️'),
+    mirantes: createCustomIcon('📷', '#3498db'),
+    gastronomia: createCustomIcon('🍴', '#e74c3c'),
+    turismo: createCustomIcon('🚌', '#9b59b6'),
+    hoteis: createCustomIcon('🏨', '#f39c12'),
+    ecologicos: createCustomIcon('🌿', '#27ae60'),
+    shoppings: createCustomIcon('🛍️', '#e67e22'),
+    jardim: createCustomIcon('🌳', '#16a085'),
+    zarpado: createCustomIcon('⛵', '#2980b9')
+  };
+
+  // Função para adicionar marcadores ao mapa
+  const addMarkers = (data, category) => {
+    data.forEach(point => {
+      const marker = L.marker([point.lat, point.lon], { 
+        icon: icons[category],
+        category: category
+      }).addTo(map);
+      
+      marker.bindPopup(`
+        <div class="popup-content">
+          <h3>${point.name}</h3>
+          <p>${point.info}</p>
+          ${point.image ? `<img src="${point.image}" alt="${point.name}" style="max-width:100%; margin-top:10px;">` : ''}
+          ${point.link ? `<a href="${point.link}" target="_blank" style="display:block; margin-top:5px;">Mais informações</a>` : ''}
+        </div>
+      `);
+      
+      markers[category].push(marker);
+    });
+  };
+
+  // Função para mostrar/ocultar marcadores por categoria
+  const filterMarkers = () => {
+    const checkboxes = document.querySelectorAll('.filter-panel input[type="checkbox"]');
+    
+    checkboxes.forEach(checkbox => {
+      const category = checkbox.dataset.category;
+      const isChecked = checkbox.checked;
+      
+      markers[category].forEach(marker => {
+        if (isChecked) {
+          map.addLayer(marker);
+        } else {
+          map.removeLayer(marker);
+        }
+      });
+    });
+  };
+
+  // Mostrar loading indicator
+  const showLoading = () => {
+    document.querySelector('.loading').style.display = 'flex';
+  };
+
+  // Ocultar loading indicator
+  const hideLoading = () => {
+    document.querySelector('.loading').style.display = 'none';
+  };
+
+  // Carregar dados (simulando requisição assíncrona)
+  const loadData = () => {
+    showLoading();
+    
+    // Simulando carregamento assíncrono
+    setTimeout(() => {
+      // 1. PRAIAS (42 pontos)
+      const praias = [
+        { name: "Praia Mole", lat: -27.602559, lon: -48.432867, info: "Uma das praias mais famosas de Florianópolis, conhecida por suas ondas fortes e paisagem deslumbrante." },
+        { name: "Praia da Joaquina", lat: -27.628923, lon: -48.448259, info: "Famosa pelo surf e pelas dunas de areia, onde se pratica sandboard." },
+        { name: "Praia do Campeche", lat: -27.689639, lon: -48.481612, info: "Praia extensa com águas claras e vista para a Ilha do Campeche." },
+        { name: "Praia dos Ingleses", lat: -27.437653, lon: -48.388743, info: "Praia muito procurada por turistas, com infraestrutura completa de lazer." },
+        { name: "Praia de Canasvieiras", lat: -27.427016, lon: -48.458508, info: "Praia de águas calmas, ideal para famílias com crianças." },
+        { name: "Praia Brava", lat: -27.403135, lon: -48.412389, info: "Praia selvagem com ondas fortes, cercada por morros e vegetação nativa." },
+        { name: "Praia da Lagoinha", lat: -27.389066, lon: -48.421550, info: "Pequena praia entre costões rochosos, de beleza preservada." },
+        { name: "Praia do Santinho", lat: -27.462179, lon: -48.376094, info: "Praia com inscrições rupestres e ótimas ondas para surf." },
+        { name: "Ponta das Canas", lat: -27.395530, lon: -48.433554, info: "Praia tranquila com águas calmas, ideal para banho." },
+        { name: "Praia da Daniela", lat: -27.452404, lon: -48.541421, info: "Praia de mar calmo, separada do continente por um estreito canal." },
+        { name: "Praia do Forte", lat: -27.432179, lon: -48.519029, info: "Praia com o Forte de São José da Ponta Grossa, construção histórica do século XVIII." },
+        { name: "Praia de Jurerê", lat: -27.438059, lon: -48.485940, info: "Praia badalada com mar calmo e infraestrutura sofisticada." },
+        { name: "Jurerê Internacional", lat: -27.436670, lon: -48.501626, info: "Um dos bairros mais luxuosos de Florianópolis, com praia exclusiva." },
+        { name: "Barra da Lagoa", lat: -27.573902, lon: -48.423685, info: "Vila de pescadores com praia de ondas moderadas e piscinas naturais." },
+        { name: "Praia do Matadeiro", lat: -27.752905, lon: -48.498637, info: "Praia preservada com águas cristalinas, ideal para mergulho." },
+        { name: "Praia da Armação", lat: -27.747946, lon: -48.504831, info: "Praia histórica onde funcionava uma armação baleeira no século XVIII." },
+        { name: "Pântano do Sul", lat: -27.781641, lon: -48.509533, info: "Vila de pescadores com praia preservada e restaurantes de frutos do mar." },
+        { name: "Praia da Solidão", lat: -27.794297, lon: -48.533642, info: "Praia isolada e selvagem, de acesso por trilha." },
+        { name: "Praia dos Açores", lat: -27.784070, lon: -48.523250, info: "Praia com piscinas naturais formadas entre as rochas." },
+        { name: "Praia do Saquinho", lat: -27.830025, lon: -48.545977, info: "Pequena praia entre costões, de acesso por trilha." },
+        { name: "Lagoinha do Leste", lat: -27.773881, lon: -48.486503, info: "Considerada uma das praias mais bonitas do Brasil, acesso apenas por trilha." },
+        { name: "Morro das Pedras", lat: -27.707145, lon: -48.497753, info: "Praia com mar aberto e ondas fortes, muito procurada por surfistas." },
+        { name: "Praia do Gravatá", lat: -27.613213, lon: -48.433584, info: "Pequena praia entre costões, de águas cristalinas." },
+        { name: "Praia da Galheta", lat: -27.592205, lon: -48.424882, info: "Praia de naturismo, cercada por vegetação nativa." },
+        { name: "Naufragados", lat: -27.834222, lon: -48.563079, info: "Praia isolada no extremo sul da ilha, com ruínas históricas." }
+      ];
+      addMarkers(praias, 'praias');
+
+      // 2. MIRANTES
+      const mirantes = [
+        { name: "Mirante da Lagoa da Conceição", lat: -27.595, lon: -48.468, info: "Vista panorâmica da lagoa e do mar." },
+        { name: "Mirante do Morro da Cruz", lat: -27.629, lon: -48.571, info: "Excelente para fotos da cidade e do pôr do sol." },
+        { name: "Mirante do Morro das Pedras", lat: -27.640, lon: -48.520, info: "Ponto ideal para apreciar o pôr do sol." },
+        { name: "Mirante da Praia Mole", lat: -27.650, lon: -48.500, info: "Vista privilegiada da Praia Mole e arredores." },
+        { name: "Mirante da Barra da Lagoa", lat: -27.575, lon: -48.430, info: "Vista para a barra e o mar aberto." }
+      ];
+      addMarkers(mirantes, 'mirantes');
+
+      // 3. ROTEIROS GASTRONÔMICOS / RESTAURANTES
+      const restaurantes = [
+        { name: "Mercado Público de Florianópolis", lat: -27.595, lon: -48.543, info: "Variedade de gastronomia local em um mercado histórico." },
+        { name: "Restaurante Ostradamus", lat: -27.650, lon: -48.520, info: "Especialidade em frutos do mar e culinária contemporânea." },
+        { name: "Bar do Arante", lat: -27.680, lon: -48.530, info: "Ambiente descontraído com comida típica açoriana." },
+        { name: "Restaurante Bokas", lat: -27.590, lon: -48.560, info: "Culinária contemporânea com ingredientes locais." },
+        { name: "Café Cultura", lat: -27.600, lon: -48.550, info: "Café e petiscos em ambiente artístico e cultural." },
+        { name: "Rancho Açoriano", lat: -27.585, lon: -48.540, info: "Culinária tradicional açoriana em ambiente rústico." },
+        { name: "Restaurante Osteria degli Specchi", lat: -27.595, lon: -48.545, info: "Cozinha italiana autêntica no centro da cidade." },
+        { name: "Box 32", lat: -27.595, lon: -48.543, info: "Bar e restaurante no Mercado Público, famoso pelos pastéis de camarão." }
+      ];
+      addMarkers(restaurantes, 'gastronomia');
+
+      // 4. AGÊNCIAS DE TURISMO
+      const agencias = [
+        { name: "Agência Turismo Floripa", lat: -27.610, lon: -48.560, info: "Pacotes turísticos e city tours pela ilha." },
+        { name: "Viaje Floripa", lat: -27.620, lon: -48.580, info: "Tours guiados pela cidade e trilhas ecológicas." },
+        { name: "Floripa Tours", lat: -27.605, lon: -48.570, info: "Roteiros personalizados para todos os tipos de viajantes." },
+        { name: "Ilha Tour", lat: -27.615, lon: -48.575, info: "Passeios de barco e excursões pela ilha." }
+      ];
+      addMarkers(agencias, 'turismo');
+
+      // 5. HOTÉIS
+      const hoteis = [
+        { name: "LK Design Hotel", lat: -27.5918, lon: -48.5435, info: "Hotel 5 estrelas com design moderno e rooftop com vista para o mar." },
+        { name: "Hotel Boutique Quinta das Videiras", lat: -27.5961, lon: -48.4565, info: "Hotel boutique charmoso na Lagoa da Conceição, estilo colonial português." },
+        { name: "Costão do Santinho Resort", lat: -27.4322, lon: -48.3792, info: "Resort all inclusive à beira-mar na Praia do Santinho, ideal para famílias." },
+        { name: "Haute Haus", lat: -27.5969, lon: -48.4538, info: "Hotel boutique com suítes exclusivas e vista para a Lagoa da Conceição." },
+        { name: "Majestic Palace Hotel", lat: -27.5916, lon: -48.5462, info: "Hotel 5 estrelas no centro, com vista para a Baía Norte e piscina no terraço." }
+      ];
+      addMarkers(hoteis, 'hoteis');
+
+      // 6. PONTOS ECOLÓGICOS
+      const ecologicos = [
+        { name: "Trilha da Lagoinha do Leste", lat: -27.7780, lon: -48.5080, info: "Trilha desafiadora que leva a uma praia isolada e selvagem." },
+        { name: "Trilha da Costa da Lagoa", lat: -27.5840, lon: -48.4810, info: "Caminhada encantadora ao longo da Lagoa da Conceição, passando por comunidades e cachoeiras." },
+        { name: "Trilha da Praia dos Naufragados", lat: -27.7980, lon: -48.5610, info: "Trilha curta até uma praia histórica com ruínas de fortificações." },
+        { name: "Trilha da Galheta", lat: -27.5910, lon: -48.4230, info: "Acesso à Praia da Galheta, conhecida por sua beleza natural e prática de naturismo." },
+        { name: "Projeto Tamar", lat: -27.5900, lon: -48.4300, info: "Centro de conservação das tartarugas marinhas com atividades educativas." },
+        { name: "Parque Estadual do Rio Vermelho", lat: -27.5800, lon: -48.4200, info: "Unidade de conservação com trilhas e viveiros de animais silvestres." },
+        { name: "Dunas da Joaquina", lat: -27.6200, lon: -48.4500, info: "Extensa área de dunas, popular para sandboard e caminhadas." }
+      ];
+      addMarkers(ecologicos, 'ecologicos');
+
+      // 7. SHOPS – Shoppings
+      const shoppings = [
+        { name: "Shopping Beira Mar", lat: -27.620, lon: -48.560, info: "Diversas lojas e entretenimento no centro da cidade." },
+        { name: "Floripa Shopping", lat: -27.605, lon: -48.580, info: "Amplo mix de lojas, cinema e praça de alimentação." },
+        { name: "Villa Romana Shopping", lat: -27.615, lon: -48.590, info: "Centro de compras sofisticado com marcas premium." },
+        { name: "Itaguaçu Shopping", lat: -27.600, lon: -48.600, info: "Opções de lazer e compras no continente." },
+        { name: "Continente Shopping", lat: -27.610, lon: -48.570, info: "Variedade de lojas e serviços em um ambiente moderno." }
+      ];
+      addMarkers(shoppings, 'shoppings');
+
+      // 8. JARDIM BOTÂNICO
+      const jardimBotanico = [
+        { name: "Jardim Botânico de Florianópolis", lat: -27.630, lon: -48.590, info: "Espaço de preservação e educação ambiental com trilhas e coleções de plantas." }
+      ];
+      addMarkers(jardimBotanico, 'jardim');
+
+      // 9. ZARPADO / TRAPICHES
+      const zarpados = [
+        { name: "Ponto de Embarque Trapiche 1", lat: -27.595, lon: -48.540, info: "Saídas para a Ilha Campeche e passeios pela baía." },
+        { name: "Ponto de Embarque Trapiche 2", lat: -27.585, lon: -48.555, info: "Passeios de lancha e bote turísticos pela costa." },
+        { name: "Píer da Barra da Lagoa", lat: -27.575, lon: -48.430, info: "Saídas para passeios de barco pela Lagoa e costa leste." }
+      ];
+      addMarkers(zarpados, 'zarpado');
+
+      // Adiciona legenda ao mapa
+      const legend = L.control({position: 'bottomright'});
+      legend.onAdd = function(map) {
+        const div = L.DomUtil.create('div', 'legend');
+        div.innerHTML = `
+          <h4><i class="fas fa-map-marked-alt"></i> Legenda</h4>
+          <div><i>🏖️</i> Praias</div>
+          <div><i>📷</i> Mirantes</div>
+          <div><i>🍴</i> Restaurantes</div>
+          <div><i>🚌</i> Agências de Turismo</div>
+          <div><i>🏨</i> Hotéis</div>
+          <div><i>🌿</i> Pontos Ecológicos</div>
+          <div><i>🛍️</i> Shoppings</div>
+          <div><i>🌳</i> Jardim Botânico</div>
+          <div><i>⛵</i> Zarpado/Trapiches</div>
+        `;
+        return div;
+      };
+      legend.addTo(map);
+
+      // Configura eventos dos controles
+      document.getElementById('reset-view').addEventListener('click', () => {
+        map.setView([-27.59, -48.55], 12);
+      });
+
+      document.getElementById('locate-me').addEventListener('click', () => {
+        map.locate({setView: true, maxZoom: 14});
+      });
+
+      document.getElementById('reset-filters').addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.filter-panel input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = true;
+        });
+        filterMarkers();
+      });
+
+      // Configura eventos dos filtros
+      document.querySelectorAll('.filter-panel input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', filterMarkers);
+      });
+
+      hideLoading();
+    }, 1000); // Simula um tempo de carregamento
+  };
+
+  // Inicia o carregamento dos dados quando o DOM estiver pronto
+  document.addEventListener('DOMContentLoaded', loadData);
 </script>
 </body>
 </html>
