@@ -19,6 +19,7 @@
       --background-color: #f9f9f9;
       --text-color: #333;
       --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
     }
     
     * {
@@ -32,6 +33,32 @@
       color: var(--text-color);
       background-color: var(--background-color);
       line-height: 1.6;
+    }
+    
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1001;
+      background-color: var(--dark-color);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 50%;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    
+    .mobile-header a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .mobile-header:hover {
+      background-color: var(--primary-color);
     }
     
     header {
@@ -69,7 +96,7 @@
       text-decoration: none;
       padding: 5px 10px;
       border-radius: 4px;
-      transition: all 0.3s ease;
+      transition: var(--transition);
       font-weight: 600;
       white-space: nowrap;
     }
@@ -83,6 +110,7 @@
       position: relative;
       height: calc(100vh - 120px);
       width: 100%;
+      transition: height 0.3s ease;
     }
     
     #map {
@@ -112,7 +140,7 @@
       align-items: center;
       gap: 5px;
       font-weight: 600;
-      transition: all 0.2s ease;
+      transition: var(--transition);
     }
     
     .map-controls button:hover {
@@ -128,6 +156,7 @@
       box-shadow: var(--shadow);
       font-size: 14px;
       line-height: 1.8;
+      transition: var(--transition);
     }
     
     .legend i {
@@ -135,6 +164,27 @@
       display: inline-block;
       text-align: center;
       margin-right: 8px;
+    }
+    
+    .legend-toggle {
+      display: none;
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      z-index: 1000;
+      background-color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    
+    .legend-toggle:hover {
+      background-color: var(--primary-color);
+      color: white;
     }
     
     /* Filtros */
@@ -150,6 +200,28 @@
       max-width: 250px;
       max-height: 80vh;
       overflow-y: auto;
+      transition: var(--transition);
+    }
+    
+    .filter-toggle {
+      display: none;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background-color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    
+    .filter-toggle:hover {
+      background-color: var(--primary-color);
+      color: white;
     }
     
     .filter-panel h3 {
@@ -172,29 +244,74 @@
       margin-right: 8px;
     }
     
+    /* Toggle do mapa */
+    .map-toggle {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1001;
+      background-color: var(--dark-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    
+    .map-toggle:hover {
+      background-color: var(--primary-color);
+      transform: scale(1.1);
+    }
+    
     /* Responsividade */
-    @media (max-width: 768px) {
-      .menu {
-        gap: 5px;
-        padding: 10px;
-      }
-      
-      .menu a {
-        font-size: 14px;
-        padding: 3px 6px;
-      }
-      
-      #map-container {
-        height: calc(100vh - 100px);
-      }
-      
+    @media (max-width: 992px) {
       .filter-panel {
-        max-width: 200px;
-        padding: 10px;
+        max-width: 220px;
       }
     }
     
-    @media (max-width: 480px) {
+    @media (max-width: 768px) {
+      header, .menu {
+        display: none;
+      }
+      
+      .mobile-header {
+        display: block;
+      }
+      
+      #map-container {
+        height: calc(100vh - 20px);
+      }
+      
+      .filter-panel {
+        left: -260px;
+        top: 60px;
+      }
+      
+      .filter-panel.active {
+        left: 10px;
+      }
+      
+      .filter-toggle {
+        display: block;
+      }
+      
+      .legend {
+        bottom: -200px;
+      }
+      
+      .legend.active {
+        bottom: 10px;
+      }
+      
+      .legend-toggle {
+        display: block;
+      }
+      
       .map-controls {
         flex-direction: row;
         bottom: 10px;
@@ -204,9 +321,29 @@
         transform: translateX(-50%);
       }
       
+      .map-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      body.map-collapsed {
+        overflow: auto;
+      }
+      
+      body.map-collapsed #map-container {
+        height: 150px;
+      }
+      
+      body.map-collapsed .map-toggle i {
+        transform: rotate(180deg);
+      }
+    }
+    
+    @media (max-width: 480px) {
       .filter-panel {
-        max-width: 150px;
-        font-size: 12px;
+        max-width: 90%;
+        width: 280px;
       }
     }
     
@@ -252,9 +389,46 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    
+    /* Popup estilizado */
+    .leaflet-popup-content-wrapper {
+      border-radius: 8px;
+    }
+    
+    .leaflet-popup-content {
+      margin: 12px;
+    }
+    
+    .leaflet-popup-content h3 {
+      margin-bottom: 8px;
+      color: var(--dark-color);
+    }
+    
+    .leaflet-popup-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+    
+    .leaflet-popup-content a {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--secondary-color);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .leaflet-popup-content a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
+
+  <div class="mobile-header">
+    <a href="https://sustainatrip.tur.br/" title="Voltar ao início"><i class="fas fa-home"></i></a>
+  </div>
 
   <header>
     <div class="container">
@@ -281,6 +455,10 @@
     </div>
     
     <!-- Filtros -->
+    <button class="filter-toggle">
+      <i class="fas fa-filter"></i> Filtros
+    </button>
+    
     <div class="filter-panel">
       <h3><i class="fas fa-filter"></i> Filtrar Categorias</h3>
       
@@ -337,6 +515,16 @@
         <i class="fas fa-globe-americas"></i> Visualização Padrão
       </button>
     </div>
+    
+    <!-- Toggle da legenda -->
+    <button class="legend-toggle">
+      <i class="fas fa-map-marked-alt"></i> Legenda
+    </button>
+    
+    <!-- Toggle para minimizar/maximizar o mapa -->
+    <button class="map-toggle">
+      <i class="fas fa-chevron-up"></i>
+    </button>
   </div>
 
 <!-- Script do Leaflet -->
@@ -357,23 +545,39 @@
     zarpado: []
   };
 
+  // Cache de elementos DOM
+  const DOM = {
+    mapContainer: document.getElementById('map-container'),
+    filterToggle: document.querySelector('.filter-toggle'),
+    filterPanel: document.querySelector('.filter-panel'),
+    legendToggle: document.querySelector('.legend-toggle'),
+    mapToggle: document.querySelector('.map-toggle'),
+    resetFiltersBtn: document.getElementById('reset-filters'),
+    locateMeBtn: document.getElementById('locate-me'),
+    resetViewBtn: document.getElementById('reset-view'),
+    loadingIndicator: document.querySelector('.loading')
+  };
+
   // Inicializa o mapa centralizando em Florianópolis
-  const map = L.map('map').setView([-27.59, -48.55], 12);
+  const map = L.map('map', {
+    preferCanvas: true // Melhora performance com muitos marcadores
+  }).setView([-27.59, -48.55], 12);
 
   // Adiciona a camada base do OpenStreetMap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 18
   }).addTo(map);
 
   // Adiciona controle de localização
-  L.control.locate({
+  const locateControl = L.control.locate({
     position: 'topright',
     strings: {
       title: "Mostrar minha localização",
       popup: "Você está dentro de {distance} {unit} deste ponto"
     },
     locateOptions: {
-      maxZoom: 16,
+      maxZoom: 14,
       enableHighAccuracy: true
     }
   }).addTo(map);
@@ -401,24 +605,38 @@
     zarpado: createCustomIcon('⛵', '#2980b9')
   };
 
-  // Função para adicionar marcadores ao mapa
+  // Função para adicionar marcadores ao mapa com otimização
   const addMarkers = (data, category) => {
+    const markerGroup = [];
+    
     data.forEach(point => {
       const marker = L.marker([point.lat, point.lon], { 
         icon: icons[category],
-        category: category
-      }).addTo(map);
+        category: category,
+        riseOnHover: true
+      });
       
-      marker.bindPopup(`
+      const popupContent = `
         <div class="popup-content">
           <h3>${point.name}</h3>
           <p>${point.info}</p>
-          ${point.image ? `<img src="${point.image}" alt="${point.name}" style="max-width:100%; margin-top:10px;">` : ''}
-          ${point.link ? `<a href="${point.link}" target="_blank" style="display:block; margin-top:5px;">Mais informações</a>` : ''}
+          ${point.image ? `<img src="${point.image}" alt="${point.name}" loading="lazy">` : ''}
+          ${point.link ? `<a href="${point.link}" target="_blank" rel="noopener">Mais informações</a>` : ''}
         </div>
-      `);
+      `;
       
+      marker.bindPopup(popupContent, {
+        maxWidth: 300,
+        minWidth: 200
+      });
+      
+      markerGroup.push(marker);
+    });
+    
+    // Adiciona todos os marcadores de uma vez para melhor performance
+    markerGroup.forEach(marker => {
       markers[category].push(marker);
+      map.addLayer(marker);
     });
   };
 
@@ -442,12 +660,12 @@
 
   // Mostrar loading indicator
   const showLoading = () => {
-    document.querySelector('.loading').style.display = 'flex';
+    DOM.loadingIndicator.style.display = 'flex';
   };
 
   // Ocultar loading indicator
   const hideLoading = () => {
-    document.querySelector('.loading').style.display = 'none';
+    DOM.loadingIndicator.style.display = 'none';
   };
 
   // Carregar dados (simulando requisição assíncrona)
@@ -585,15 +803,15 @@
       legend.addTo(map);
 
       // Configura eventos dos controles
-      document.getElementById('reset-view').addEventListener('click', () => {
+      DOM.resetViewBtn.addEventListener('click', () => {
         map.setView([-27.59, -48.55], 12);
       });
 
-      document.getElementById('locate-me').addEventListener('click', () => {
-        map.locate({setView: true, maxZoom: 14});
+      DOM.locateMeBtn.addEventListener('click', () => {
+        locateControl.start();
       });
 
-      document.getElementById('reset-filters').addEventListener('click', () => {
+      DOM.resetFiltersBtn.addEventListener('click', () => {
         const checkboxes = document.querySelectorAll('.filter-panel input[type="checkbox"]');
         checkboxes.forEach(checkbox => {
           checkbox.checked = true;
@@ -606,8 +824,38 @@
         checkbox.addEventListener('change', filterMarkers);
       });
 
+      // Toggle do painel de filtros
+      DOM.filterToggle.addEventListener('click', () => {
+        DOM.filterPanel.classList.toggle('active');
+      });
+
+      // Toggle da legenda
+      DOM.legendToggle.addEventListener('click', () => {
+        const legend = document.querySelector('.leaflet-control.legend');
+        if (legend) {
+          legend.classList.toggle('active');
+        }
+      });
+
+      // Toggle para minimizar/maximizar o mapa
+      DOM.mapToggle.addEventListener('click', () => {
+        document.body.classList.toggle('map-collapsed');
+        setTimeout(() => {
+          map.invalidateSize();
+        }, 300);
+      });
+
+      // Fecha painéis quando clicar no mapa
+      map.on('click', () => {
+        DOM.filterPanel.classList.remove('active');
+        const legend = document.querySelector('.leaflet-control.legend');
+        if (legend) {
+          legend.classList.remove('active');
+        }
+      });
+
       hideLoading();
-    }, 1000); // Simula um tempo de carregamento
+    }, 800); // Simula um tempo de carregamento
   };
 
   // Inicia o carregamento dos dados quando o DOM estiver pronto
